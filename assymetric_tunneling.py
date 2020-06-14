@@ -75,7 +75,7 @@ def initial_trap(x, t=0):
     return 12.5 * (x + 20.) ** 2
 
 
-init_state = imag_time_gpe1D(
+init_state, mu = imag_time_gpe1D(
     v=initial_trap,
     g=g,
     dt=1e-3,
@@ -83,7 +83,7 @@ init_state = imag_time_gpe1D(
     **params
 )
 
-init_state = imag_time_gpe1D(
+init_state, mu = imag_time_gpe1D(
     wavefunction=init_state,
     g=g,
     v=initial_trap,
@@ -94,7 +94,7 @@ init_state = imag_time_gpe1D(
 
 flipped_initial_trap = njit(lambda x, t: initial_trap(-x, t))
 
-flipped_init_state = imag_time_gpe1D(
+flipped_init_state, mu = imag_time_gpe1D(
     v=flipped_initial_trap,
     g=g,
     dt=1e-3,
@@ -102,7 +102,7 @@ flipped_init_state = imag_time_gpe1D(
     **params
 )
 
-flipped_init_state = imag_time_gpe1D(
+flipped_init_state, mu = imag_time_gpe1D(
     wavefunction=flipped_init_state,
     g=g,
     v=flipped_initial_trap,
