@@ -2,7 +2,7 @@ import numpy as np
 import pyfftw
 import pickle
 from numpy import linalg  # Linear algebra for dense matrix
-from numba import njit, jit
+from numba import njit
 from numba.targets.registry import CPUDispatcher
 from types import FunctionType
 from multiprocessing import cpu_count
@@ -122,7 +122,7 @@ def imag_time_gpe1D(*, x_grid_dim, x_amplitude, v, k, dt, g, init_wavefunction=N
         psi /= linalg.norm(psi) * np.sqrt(dx)
         psi *= np.exp(-0.5 * dt * g * np.abs(psi) ** 2)
 
-    @jit
+    @njit
     def get_energy(psi, pis_p):
         """
         Calculate the energy for a given wave function and its momentum representaion
