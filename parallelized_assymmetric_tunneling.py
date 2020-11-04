@@ -72,10 +72,10 @@ def initial_trap(x, t=0):
 
 def run_single_case(params):
     """
-    A function that will be run on different processors.
+    This function that will be run on different processors.
     First it will find the initial state and then it will propagate
     :param params: dict with parameters for propagation
-    :return: numpy.array
+    :return: dict contaning results
     """
     # get the initial state
     init_state, mu = imag_time_gpe1D(
@@ -216,6 +216,8 @@ if __name__ == '__main__':
     #
     ####################################################################################################################
 
+    # get the unflip and flip simulations run in parallel;
+    # results will be saved in qsys and qsys_flipped, respectively
     with Pool() as pool:
         qsys, qsys_flipped = pool.map(run_single_case, [sys_params, sys_params_flipped])
 
