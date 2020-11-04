@@ -46,7 +46,7 @@ def k(p, t=0.):
 
 # save parameters as a separate bundle
 params = dict(
-    x_grid_dim=32 * 1024,
+    x_grid_dim=1 * 1024,
     x_amplitude=80.,
 
     k=k,
@@ -87,8 +87,8 @@ init_state, mu = imag_time_gpe1D(
     wavefunction=init_state,
     g=g,
     v=initial_trap,
-    dt=1e-5,
-    epsilon=1e-10,
+    dt=1e-4,
+    epsilon=1e-9,
     **params
 )
 
@@ -106,8 +106,8 @@ flipped_init_state, mu = imag_time_gpe1D(
     wavefunction=flipped_init_state,
     g=g,
     v=flipped_initial_trap,
-    dt=1e-5,
-    epsilon=1e-10,
+    dt=1e-4,
+    epsilon=1e-9,
     **params
 )
 
@@ -222,7 +222,7 @@ def analyze_propagation(qsys, wavefunctions, title):
     plt.show()
 
     plt.title('time increments $dt$')
-    plt.plot(qsys.time_incremenets)
+    plt.plot(qsys.time_increments)
     plt.ylabel('$dt$')
     plt.xlabel('time step')
     plt.show()
@@ -244,7 +244,7 @@ gpe_qsys = SplitOpGPE1D(
 ).set_wavefunction(init_state)
 
 # get time duration of 2 periods
-T = 1. * 2. * np.pi
+T = 0.1 * 2. * np.pi
 times = np.linspace(0, T, 500)
 
 # propagate till time T and for each time step save a probability density

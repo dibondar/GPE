@@ -3,9 +3,20 @@ import pyfftw
 import pickle
 from numpy import linalg  # Linear algebra for dense matrix
 from numba import njit
-from numba.targets.registry import CPUDispatcher
+from numba.core.registry import CPUDispatcher
 from types import FunctionType
 from multiprocessing import cpu_count
+
+import os
+
+threads = 1
+os.environ["OMP_NUM_THREADS"] = '{}'.format(threads)
+os.environ['NUMEXPR_MAX_THREADS']='{}'.format(threads)
+os.environ['NUMEXPR_NUM_THREADS']='{}'.format(threads)
+os.environ['OMP_NUM_THREADS'] = '{}'.format(threads)
+os.environ['MKL_NUM_THREADS'] = '{}'.format(threads)
+
+#Potentially try reducing cpu count
 
 def imag_time_gpe1D(*, x_grid_dim, x_amplitude, v, k, dt, g, init_wavefunction=None, epsilon=1e-7,
                     abs_boundary=1., fftw_wisdom_fname='fftw.wisdom', **kwargs):
@@ -57,8 +68,8 @@ def imag_time_gpe1D(*, x_grid_dim, x_amplitude, v, k, dt, g, init_wavefunction=N
 
     # parameters for FFT
     fft_params = {
-        "flags": ('FFTW_PATIENT', 'FFTW_DESTROY_INPUT'),
-        "threads": cpu_count(),
+        "flags": ('FFTW_MEASURE', 'FFTW_DESTROY_INPUT'),
+        "threads": cpu_count(),                                       #removed cpu_count from here
         "planning_timelimit": 60,
     }
 
@@ -95,11 +106,13 @@ def imag_time_gpe1D(*, x_grid_dim, x_amplitude, v, k, dt, g, init_wavefunction=N
 
     # evaluate the potential energy
     v = v(x, 0.)
-    v -= v.min()
+    v_min = v.min()
+    v -= v_min
 
     # evaluate the kinetic energy
     k = k(p, 0.)
-    k -= k.min()
+    k_min = k.min()
+    k -= k_min
 
     # pre-calculate the absorbing potential and the sequence of alternating signs
     abs_boundary = (abs_boundary if isinstance(abs_boundary, (float, int)) else abs_boundary(x))
@@ -129,9 +142,9 @@ def imag_time_gpe1D(*, x_grid_dim, x_amplitude, v, k, dt, g, init_wavefunction=N
         :return: float
         """
         density = np.abs(psi) ** 2
-        density /= density.sum()
+        density /= density.sum() * dx
 
-        energy = np.sum((v + 0.5 * g * density / dx) * density)
+        energy = np.sum((v + g * density) * density) * dx
 
         # get momentum density
         density = np.abs(pis_p) ** 2
@@ -139,7 +152,7 @@ def imag_time_gpe1D(*, x_grid_dim, x_amplitude, v, k, dt, g, init_wavefunction=N
 
         energy += np.sum(k * density)
 
-        return energy
+        return energy + v_min
 
     counter = 0
     energy = 0.
@@ -269,8 +282,8 @@ class SplitOpGPE1D(object):
 
         # parameters for FFT
         self.fft_params = {
-            "flags": ('FFTW_PATIENT', 'FFTW_DESTROY_INPUT'),
-            "threads": cpu_count(),
+            "flags": ('FFTW_MEASURE', 'FFTW_DESTROY_INPUT'),
+            "threads": cpu_count(),                                       #Removed cpu_count from here
             "planning_timelimit": 60,
         }
 
@@ -315,7 +328,7 @@ class SplitOpGPE1D(object):
         self.previous_dt = 0
 
         # list of self.dt to monitor how the adaptive step method is working
-        self.time_incremenets = []
+        self.time_increments = []
 
         ####################################################################################################
         #
@@ -396,7 +409,7 @@ class SplitOpGPE1D(object):
             self.get_p_average_rhs = get_p_average_rhs
 
             # The code above is equivalent to
-            # self.get_p_average_rhs = njit(lambda density, t: np.sum(density * diff_v(x, t)))
+            #self.get_p_average_rhs = njit(lambda density, t: np.sum(density * diff_v(x, t)))
 
             @njit
             def get_v_average(density, t):
@@ -492,7 +505,7 @@ class SplitOpGPE1D(object):
             np.copyto(self.wavefunction, self.wavefunction_next)
 
             # save self.dt for monitoring purpose
-            self.time_incremenets.append(self.dt)
+            self.time_increments.append(self.dt)
 
             # increment time
             self.t += self.dt
