@@ -84,7 +84,7 @@ init_state, mu = imag_time_gpe1D(
 )
 
 init_state, mu = imag_time_gpe1D(
-    wavefunction=init_state,
+    init_wavefunction=init_state,
     g=g,
     v=initial_trap,
     dt=1e-4,
@@ -103,7 +103,7 @@ flipped_init_state, mu = imag_time_gpe1D(
 )
 
 flipped_init_state, mu = imag_time_gpe1D(
-    wavefunction=flipped_init_state,
+    init_wavefunction=flipped_init_state,
     g=g,
     v=flipped_initial_trap,
     dt=1e-4,

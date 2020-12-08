@@ -89,7 +89,7 @@ def run_single_case(params):
     init_state, mu = imag_time_gpe1D(
         v=params['initial_trap'],
         g=g,
-        wavefunction=init_state,
+        init_wavefunction=init_state,
         dt=1e-4,
         epsilon=1e-9,
         **params
